@@ -6,18 +6,15 @@ composer require qing7260/captcha
 ```
 
 
-```
-php bin/hyperf.php vendor:publish qing7260/captcha
-```
-
-
 ## Configuration
 
 To use your own settings, publish config.
 
-```$ php artisan vendor:publish```
+```
+php bin/hyperf.php vendor:publish qing7260/captcha
+```
 
-`config/captcha.php`
+`config/autoload/captcha.php`
 
 ```php
 return [
