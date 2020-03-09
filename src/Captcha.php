@@ -14,6 +14,8 @@ use Hyperf\Contract\ConfigInterface;
 use Psr\Container\ContainerInterface;
 use Intervention\Image\ImageManager;
 use Hyperf\Utils\Str;
+use Hyperf\Contract\SessionInterface;
+use Hyperf\HttpMessage\Server\Request;
 
 
 /**
