@@ -22,6 +22,24 @@ if (!function_exists('captcha')) {
     }
 }
 
+if (!function_exists('captcha_api')) {
+
+    /**
+     * @param string $config
+     * @return mixed
+     */
+    function captcha_api($config = 'default')
+    {
+        $CaptchaBuilder = ApplicationContext::getContainer()->get(CaptchaInterface::class);
+
+        if (ob_get_contents()) {
+            ob_clean();
+        }
+
+        return $CaptchaBuilder->create($config, $api = true);
+    }
+}
+
 
 if (!function_exists('captcha_src')) {
     /**

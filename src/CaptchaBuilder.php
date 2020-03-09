@@ -171,16 +171,19 @@ class CaptchaBuilder implements CaptchaInterface
     /**
      * Constructor
      *
-     * @throws Exception
+     * @param $config
+     * @param $imageManager
+     * @param $session
+     * @param $str
      * @internal param Validator $validator
      */
-    public function __construct()
+    public function __construct($config, $imageManager, $session, $str)
     {
-        $this->config = ApplicationContext::getContainer()->get(ConfigInterface::class);
-        $this->imageManager = new ImageManager();
-        $this->session = ApplicationContext::getContainer()->get(SessionInterface::class);
-        $this->str = new Str();
-        $this->characters = config('captcha.characters', ['1', '2', '3', '4', '6', '7', '8', '9']);
+        $this->config         = $config;
+        $this->imageManager   = $imageManager;
+        $this->session        = $session;
+        $this->str            = $str;
+        $this->characters     = config('captcha.characters', ['1', '2', '3', '4', '6', '7', '8', '9']);
         $this->fontsDirectory = config('captcha.fontsDirectory', __DIR__ . '/../assets/fonts');
     }
 
@@ -199,10 +202,12 @@ class CaptchaBuilder implements CaptchaInterface
 
     protected function files($directory, $hidden = false)
     {
-        return iterator_to_array(
-            Finder::create()->files()->ignoreDotFiles(! $hidden)->in($directory)->depth(0)->sortByName(),
-            false
-        );
+        return iterator_to_array(Finder::create()
+                                       ->files()
+                                       ->ignoreDotFiles(!$hidden)
+                                       ->in($directory)
+                                       ->depth(0)
+                                       ->sortByName(), false);
     }
 
     /**
@@ -216,7 +221,7 @@ class CaptchaBuilder implements CaptchaInterface
     public function create($config = 'default', $api = false)
     {
         $this->backgrounds = $this->files(__DIR__ . '/../assets/backgrounds');
-        $this->fonts = $this->files($this->fontsDirectory);
+        $this->fonts       = $this->files($this->fontsDirectory);
 
         $this->fonts = array_map(function ($file) {
             return $file->getPathName();
@@ -226,22 +231,16 @@ class CaptchaBuilder implements CaptchaInterface
 
         $this->configure($config);
 
-        $generator = $this->generate();
+        $generator  = $this->generate();
         $this->text = $generator['value'];
 
-        $this->canvas = $this->imageManager->canvas(
-            $this->width,
-            $this->height,
-            $this->bgColor
-        );
+        $this->canvas = $this->imageManager->canvas($this->width, $this->height, $this->bgColor);
 
         if ($this->bgImage) {
-            $this->image = $this->imageManager->make($this->background())->resize(
-                $this->width,
-                $this->height
-            );
+            $this->image = $this->imageManager->make($this->background())->resize($this->width, $this->height);
             $this->canvas->insert($this->image);
-        } else {
+        }
+        else {
             $this->image = $this->canvas;
         }
 
@@ -265,8 +264,8 @@ class CaptchaBuilder implements CaptchaInterface
 
         return $api ? [
             'sensitive' => $generator['sensitive'],
-            'key' => $generator['key'],
-            'img' => $this->image->encode('data-url')->encoded
+            'key'       => $generator['key'],
+            'img'       => $this->image->encode('data-url')->encoded
         ] : $this->image->response('png', $this->quality);
     }
 
@@ -294,14 +293,15 @@ class CaptchaBuilder implements CaptchaInterface
         $key = '';
 
         if ($this->math) {
-            $x = random_int(10, 30);
-            $y = random_int(1, 9);
+            $x   = random_int(10, 30);
+            $y   = random_int(1, 9);
             $bag = "$x + $y = ";
             $key = $x + $y;
             $key .= '';
-        } else {
+        }
+        else {
             for ($i = 0; $i < $this->length; $i++) {
-                $char = $characters[rand(0, count($characters) - 1)];
+                $char  = $characters[rand(0, count($characters) - 1)];
                 $bag[] = $this->sensitive ? $char : $this->str->lower($char);
             }
             $key = implode('', $bag);
@@ -310,13 +310,13 @@ class CaptchaBuilder implements CaptchaInterface
         $hash = $this->makeHash($key);
         $this->session->put('captcha', [
             'sensitive' => $this->sensitive,
-            'key' => $hash
+            'key'       => $hash
         ]);
 
         return [
-            'value' => $bag,
+            'value'     => $bag,
             'sensitive' => $this->sensitive,
-            'key' => $hash
+            'key'       => $hash
         ];
     }
 
@@ -324,7 +324,7 @@ class CaptchaBuilder implements CaptchaInterface
     /**
      * Extract the cost value from the options array.
      *
-     * @param  array  $options
+     * @param array $options
      * @return int
      */
     protected function cost(array $options = [])
@@ -349,9 +349,9 @@ class CaptchaBuilder implements CaptchaInterface
     /**
      * Check the given plain value against a hash.
      *
-     * @param  string  $value
-     * @param  string  $hashedValue
-     * @param  array  $options
+     * @param string $value
+     * @param string $hashedValue
+     * @param array $options
      * @return bool
      */
     public function checkHash($value, $hashedValue, array $options = [])
@@ -418,7 +418,8 @@ class CaptchaBuilder implements CaptchaInterface
     {
         if (!empty($this->fontColors)) {
             $color = $this->fontColors[rand(0, count($this->fontColors) - 1)];
-        } else {
+        }
+        else {
             $color = [rand(0, 255), rand(0, 255), rand(0, 255)];
         }
 
@@ -443,15 +444,9 @@ class CaptchaBuilder implements CaptchaInterface
     protected function lines()
     {
         for ($i = 0; $i <= $this->lines; $i++) {
-            $this->image->line(
-                rand(0, $this->image->width()) + $i * rand(0, $this->image->height()),
-                rand(0, $this->image->height()),
-                rand(0, $this->image->width()),
-                rand(0, $this->image->height()),
-                function ($draw) {
-                    $draw->color($this->fontColor());
-                }
-            );
+            $this->image->line(rand(0, $this->image->width()) + $i * rand(0, $this->image->height()), rand(0, $this->image->height()), rand(0, $this->image->width()), rand(0, $this->image->height()), function ($draw) {
+                $draw->color($this->fontColor());
+            });
         }
 
         return $this->image;
@@ -469,7 +464,7 @@ class CaptchaBuilder implements CaptchaInterface
             return false;
         }
 
-        $key = $this->session->get('captcha.key');
+        $key       = $this->session->get('captcha.key');
         $sensitive = $this->session->get('captcha.sensitive');
 
         if (!$sensitive) {
