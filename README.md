@@ -2,7 +2,7 @@
 
 Require this package with composer:
 ```
-composer require qing7260/captcha
+composer require qing7777/captcha
 ```
 
 
@@ -11,7 +11,7 @@ composer require qing7260/captcha
 To use your own settings, publish config.
 
 ```
-php bin/hyperf.php vendor:publish qing7260/captcha
+php bin/hyperf.php vendor:publish qing7777/captcha
 ```
 
 `config/autoload/captcha.php`
